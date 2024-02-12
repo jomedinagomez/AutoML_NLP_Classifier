@@ -1,0 +1,55 @@
+$schema: https://azuremlsdk2.blob.core.windows.net/preview/0.0.1/autoMLNLPTextClassificationMultilabelJob.schema.json
+
+type: automl
+experiment_name: nlp_classifier_new
+description: A text classification multilabel job using paper categorization data
+
+compute: azureml:sample-finetune-cluster
+
+task: text_classification_multilabel
+primary_metric: accuracy
+log_verbosity: debug
+
+limits:
+  max_trials: 200
+
+target_column_name: "Topic"
+training_data:
+  path: "./nlpclassifiertraining"
+  type: mltable
+validation_data:
+  type: mltable
+  path: "./nlpclassifiervalidation"
+
+#featurization:
+#  dataset_language: "eng"
+
+sweep:
+  sampling_algorithm: bayesian
+  early_termination:
+    type: bandit
+    evaluation_interval: 10
+    slack_amount: 0.05
+    delay_evaluation: 6
+
+search_space:
+  - model_name:
+      type: choice
+      values: [bert-base-cased,roberta-base,distilroberta-base,xlnet-base-cased,bert-large-uncased,roberta-large]
+    number_of_epochs: 
+      type: choice 
+      values: [1,2,3,4,5,6,7,8]
+    gradient_accumulation_steps:
+      type: choice
+      values: [1,2,4,8,16,32]
+    training_batch_size:
+      type: choice
+      values: [1,2]
+    weight_decay:
+      type: uniform
+      min_value: 0.01
+      max_value: 0.4
+    learning_rate: 
+      type: uniform 
+      min_value: 0.000005 
+      max_value: 0.00005
